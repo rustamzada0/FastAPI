@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends, status, Response, HTTPException
 from sqlalchemy.orm import Session
+from typing import List
 from . import models, database, schemas
 
 app = FastAPI()
@@ -19,22 +20,23 @@ def blogapp():
     return 'salam'
 
 
-@app.get('/blogs')
+@app.get('/blogs', response_model=List[schemas.ShowBlog])
 def get_all(db: Session = Depends(get_db)):
     blogs = db.query(models.Blogs).all()
     print(blogs)
     return blogs
 
 
-@app.get('/blog/{id}', status_code=200)
+@app.get('/blog/{id}', status_code=200, response_model=schemas.ShowBlog)
 def show_blog(id: int, response: Response, db: Session = Depends(get_db)):
     blog = db.query(models.Blogs).filter(models.Blogs.id == id).first()
-    print(blog)
+    print(blog.title, blog.body)
     if not blog:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"is not available")
         # response.status_code = status.HTTP_404_NOT_FOUND
         # return {'detail': 'is not available'}
+    
     return blog
 
 
@@ -59,7 +61,10 @@ def destroy(id: int, db: Session = Depends(get_db)):
 @app.put('/blog/{id}', status_code=status.HTTP_202_ACCEPTED)
 def update(id: int, request: schemas.Blog, db: Session = Depends(get_db)):
     print(request)
-    db.query(models.Blogs).filter(models.Blogs.id == id).update(request)
+    blog = db.query(models.Blogs).filter(models.Blogs.id == id)
+    if not blog.first():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    blog.update(request)
     db.commit()
     return 'update!'
 
