@@ -13,8 +13,14 @@ def get_db():
     finally:
         db.close()
 
+
+@app.get('/blogapp')
+def blogapp():
+    return 'salam'
+
+
 @app.post('/blogapp')
-def create(request: schemas.Blog, db: Session = Depends(get_db)):
+def create_blog(request: schemas.Blog, db: Session = Depends(get_db)):
     print(request)
     new_blog = models.Blogs(title = request.title, body = request.body)
     db.add(new_blog)
@@ -22,19 +28,19 @@ def create(request: schemas.Blog, db: Session = Depends(get_db)):
     db.refresh(new_blog)
     return new_blog
 
-@app.get('/blogapp')
-def blogapp():
-    return 'salam'
+
+@app.get('/blogs')
+def get_all(db: Session = Depends(get_db)):
+    blogs = db.query(models.Blogs).all()
+    print(blogs)
+    return blogs
 
 
-# @app.post("/users/")
-# def create_user(user: models.User, db: Session = Depends(database.SessionLocal)):
-#     return crud.create_user(db=db, user=user)
-
-
-# @app.post("/users/")
-# def create_user(user: schemas.UserCreate, db: Session = Depends(database.SessionLocal)):
-#     return crud.create_user(db=db, user=user)
+@app.get('/blog/{id}')
+def show_blog(id: int, db: Session = Depends(get_db)):
+    blog = db.query(models.Blogs).filter(models.Blogs.id == id).first()
+    print(blog)
+    return blog
 
 
 @app.on_event("startup")
