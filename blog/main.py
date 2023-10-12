@@ -17,19 +17,19 @@ def get_db():
         db.close()
 
 
-@app.get('/blogapp')
+@app.get('/blogapp', tags=['blogs'])
 def blogapp():
     return 'salam'
 
 
-@app.get('/blogs', response_model=List[schemas.ShowBlog])
+@app.get('/blogs', response_model=List[schemas.ShowBlog], tags=['blogs'])
 def get_all(db: Session = Depends(get_db)):
     blogs = db.query(models.Blogs).all()
     print(blogs)
     return blogs
 
 
-@app.get('/blog/{id}', status_code=200, response_model=schemas.ShowBlog)
+@app.get('/blog/{id}', status_code=200, response_model=schemas.ShowBlog, tags=['blogs'])
 def show_blog(id: int, response: Response, db: Session = Depends(get_db)):
     blog = db.query(models.Blogs).filter(models.Blogs.id == id).first()
     print(blog.title, blog.body)
@@ -42,7 +42,7 @@ def show_blog(id: int, response: Response, db: Session = Depends(get_db)):
     return blog
 
 
-@app.get('/user/{id}', status_code=200, response_model=schemas.ShowUser)
+@app.get('/user/{id}', status_code=200, response_model=schemas.ShowUser, tags=['users'])
 def get_user(id: int, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == id).first()
 
@@ -53,7 +53,7 @@ def get_user(id: int, db: Session = Depends(get_db)):
     return user
 
 
-@app.post('/blogapp', status_code=status.HTTP_201_CREATED)
+@app.post('/blogapp', status_code=status.HTTP_201_CREATED, tags=['blogs'])
 def create_blog(request: schemas.Blog, db: Session = Depends(get_db)):
     print(request)
     new_blog = models.Blogs(title = request.title, body = request.body)
@@ -63,7 +63,7 @@ def create_blog(request: schemas.Blog, db: Session = Depends(get_db)):
     return new_blog
 
 
-@app.post('/user', status_code=status.HTTP_201_CREATED, response_model=schemas.ShowUser)
+@app.post('/user', status_code=status.HTTP_201_CREATED, response_model=schemas.ShowUser, tags=['users'])
 def create_user(request: schemas.User, db: Session = Depends(get_db)):
     hashed_password = pwd_cxt.hash(request.password)
     new_user = models.User(name = request.name, email = request.email, password = hashed_password)
@@ -74,7 +74,7 @@ def create_user(request: schemas.User, db: Session = Depends(get_db)):
     return new_user
 
 
-@app.delete('/blog/{id}', status_code=status.HTTP_204_NO_CONTENT)
+@app.delete('/blog/{id}', status_code=status.HTTP_204_NO_CONTENT, tags=['blogs'])
 def destroy(id: int, db: Session = Depends(get_db)):
     print(db)
     db.query(models.Blogs).filter(models.Blogs.id == id).delete(synchronize_session=False)
@@ -82,7 +82,7 @@ def destroy(id: int, db: Session = Depends(get_db)):
     return 'done'
 
 
-@app.put('/blog/{id}', status_code=status.HTTP_202_ACCEPTED)
+@app.put('/blog/{id}', status_code=status.HTTP_202_ACCEPTED, tags=['blogs'])
 def update(id: int, request: schemas.Blog, db: Session = Depends(get_db)):
     print(request)
     blog = db.query(models.Blogs).filter(models.Blogs.id == id)
