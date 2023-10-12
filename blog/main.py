@@ -50,6 +50,16 @@ def create_blog(request: schemas.Blog, db: Session = Depends(get_db)):
     return new_blog
 
 
+@app.post('/user', status_code=status.HTTP_201_CREATED)
+def create_user(request: schemas.User, db: Session = Depends(get_db)):
+    new_user = models.User(name = request.name, email = request.email, password = request.password)
+    # new_user = models.User(request)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
+
+
 @app.delete('/blog/{id}', status_code=status.HTTP_204_NO_CONTENT)
 def destroy(id: int, db: Session = Depends(get_db)):
     print(db)
@@ -64,6 +74,7 @@ def update(id: int, request: schemas.Blog, db: Session = Depends(get_db)):
     blog = db.query(models.Blogs).filter(models.Blogs.id == id)
     if not blog.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    # blog.update(title = request.title, body = request.body)
     blog.update(request)
     db.commit()
     return 'update!'

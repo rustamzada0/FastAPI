@@ -13,7 +13,8 @@ class ShowBlog(BaseModel):
     class Config:
             orm_mode = True
 
-# class UserCreate(BaseModel):
-#     username: str
-#     email: str
-#     full_name: str
+
+class User(BaseModel):
+    name: str
+    email: str
+    password: str
