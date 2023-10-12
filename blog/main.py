@@ -42,6 +42,17 @@ def show_blog(id: int, response: Response, db: Session = Depends(get_db)):
     return blog
 
 
+@app.get('/user/{id}', status_code=200, response_model=schemas.ShowUser)
+def get_user(id: int, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == id).first()
+
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"User with the id {id} is not available")
+    
+    return user
+
+
 @app.post('/blogapp', status_code=status.HTTP_201_CREATED)
 def create_blog(request: schemas.Blog, db: Session = Depends(get_db)):
     print(request)
@@ -52,7 +63,7 @@ def create_blog(request: schemas.Blog, db: Session = Depends(get_db)):
     return new_blog
 
 
-@app.post('/user', status_code=status.HTTP_201_CREATED)
+@app.post('/user', status_code=status.HTTP_201_CREATED, response_model=schemas.ShowUser)
 def create_user(request: schemas.User, db: Session = Depends(get_db)):
     hashed_password = pwd_cxt.hash(request.password)
     new_user = models.User(name = request.name, email = request.email, password = hashed_password)
